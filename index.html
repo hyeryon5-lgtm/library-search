@@ -4,18 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>성산도서관 검색</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #f2f2f7;
       color: #1c1c1e;
       min-height: 100vh;
     }
-
     header {
       background: #fff;
       padding: 16px 20px 12px;
@@ -24,337 +21,308 @@
       top: 0;
       z-index: 10;
     }
+    header h1 { font-size: 20px; font-weight: 700; }
+    header p { font-size: 13px; color: #8e8e93; margin-top: 2px; }
 
-    header h1 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1c1c1e;
-    }
+    .container { padding: 16px; max-width: 600px; margin: 0 auto; }
 
-    header p {
-      font-size: 13px;
-      color: #8e8e93;
-      margin-top: 2px;
-    }
-
-    .container {
-      padding: 16px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .input-card {
+    .card {
       background: #fff;
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 16px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-
-    .input-card label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #8e8e93;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: block;
-      margin-bottom: 8px;
+    .card label {
+      font-size: 13px; font-weight: 600; color: #8e8e93;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      display: block; margin-bottom: 8px;
     }
-
     textarea {
-      width: 100%;
-      border: 1px solid #e5e5ea;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 15px;
-      line-height: 1.5;
-      resize: none;
-      outline: none;
-      color: #1c1c1e;
-      background: #f9f9f9;
-      min-height: 120px;
+      width: 100%; border: 1px solid #e5e5ea; border-radius: 8px;
+      padding: 12px; font-size: 15px; line-height: 1.5; resize: none;
+      outline: none; color: #1c1c1e; background: #f9f9f9; min-height: 120px;
       font-family: inherit;
     }
+    textarea:focus { border-color: #007aff; background: #fff; }
+    .hint { font-size: 12px; color: #aeaeb2; margin-top: 6px; }
 
-    textarea:focus {
-      border-color: #007aff;
-      background: #fff;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #aeaeb2;
-      margin-top: 6px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      background: #007aff;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 12px;
+    .btn {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 12px;
       transition: opacity 0.15s;
     }
+    .btn:active { opacity: 0.8; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: #007aff; color: #fff; }
+    .btn-green { background: #34c759; color: #fff; }
 
-    button:active { opacity: 0.8; }
-    button:disabled { background: #aeaeb2; cursor: not-allowed; }
-
-    .spinner {
-      display: none;
-      text-align: center;
-      padding: 32px;
-      color: #8e8e93;
-      font-size: 14px;
-    }
-
+    /* 스피너 */
+    .spinner { display: none; text-align: center; padding: 24px; color: #8e8e93; font-size: 14px; }
     .spinner.show { display: block; }
-
     .spinner-icon {
-      width: 28px;
-      height: 28px;
-      border: 3px solid #e5e5ea;
-      border-top-color: #007aff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px;
+      width: 28px; height: 28px; border: 3px solid #e5e5ea;
+      border-top-color: #007aff; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .results { margin-top: 4px; }
+    /* 책 확인 카드 */
+    .verify-card {
+      background: #fff; border-radius: 12px; padding: 12px 14px;
+      margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .verify-card img {
+      width: 54px; height: 72px; object-fit: cover;
+      border-radius: 4px; flex-shrink: 0;
+      background: #e5e5ea;
+    }
+    .verify-info { flex: 1; min-width: 0; }
+    .verify-query { font-size: 11px; color: #aeaeb2; margin-bottom: 3px; }
+    .verify-title { font-size: 14px; font-weight: 600; color: #1c1c1e; line-height: 1.3; }
+    .verify-author { font-size: 12px; color: #8e8e93; margin-top: 3px; }
+    .verify-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; margin-top: 5px;
+    }
+    .badge-found { background: #d4f1de; color: #1a7a3c; }
+    .badge-notfound { background: #f2f2f7; color: #8e8e93; }
 
-    .search-group {
-      margin-bottom: 20px;
+    /* 체크박스 */
+    .verify-check { flex-shrink: 0; margin-top: 2px; }
+    .verify-check input[type=checkbox] {
+      width: 20px; height: 20px; cursor: pointer; accent-color: #007aff;
     }
 
-    .search-query {
-      font-size: 13px;
-      font-weight: 600;
-      color: #8e8e93;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-      padding: 0 4px;
+    /* 도서관 결과 */
+    .section-title {
+      font-size: 13px; font-weight: 600; color: #8e8e93;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 8px; padding: 0 4px;
     }
-
+    .search-group { margin-bottom: 20px; }
     .book-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      background: #fff; border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
       border-left: 4px solid #34c759;
     }
-
-    .book-card.unavailable {
-      border-left-color: #ff3b30;
-    }
-
-    .book-card.not-found {
-      border-left-color: #aeaeb2;
-    }
-
-    .book-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #1c1c1e;
-      margin-bottom: 6px;
-      line-height: 1.4;
-    }
-
-    .book-meta {
-      font-size: 13px;
-      color: #8e8e93;
-      margin-bottom: 4px;
-      display: flex;
-      gap: 6px;
-    }
-
+    .book-card.unavailable { border-left-color: #ff3b30; }
+    .book-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+    .book-meta { font-size: 13px; color: #8e8e93; margin-bottom: 4px; display: flex; gap: 6px; }
     .book-meta span { color: #aeaeb2; }
-
     .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-top: 6px;
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; margin-top: 6px;
     }
-
-    .badge.available {
-      background: #d4f1de;
-      color: #1a7a3c;
-    }
-
-    .badge.unavailable {
-      background: #fde8e8;
-      color: #c0392b;
-    }
-
-    .badge.none {
-      background: #f2f2f7;
-      color: #8e8e93;
-    }
-
+    .badge.available { background: #d4f1de; color: #1a7a3c; }
+    .badge.unavailable { background: #fde8e8; color: #c0392b; }
     .no-result {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      border-left: 4px solid #aeaeb2;
-      font-size: 14px;
-      color: #8e8e93;
+      background: #fff; border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 4px solid #aeaeb2; font-size: 14px; color: #8e8e93;
     }
-
-    .error-msg {
-      background: #fde8e8;
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: #c0392b;
-      font-size: 14px;
-      text-align: center;
-    }
-
     .summary {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      display: flex;
-      gap: 20px;
+      background: #fff; border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex; gap: 20px;
     }
-
-    .summary-item {
-      text-align: center;
-      flex: 1;
-    }
-
-    .summary-item .num {
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .summary-item .label {
-      font-size: 12px;
-      color: #8e8e93;
-      margin-top: 2px;
-    }
-
+    .summary-item { text-align: center; flex: 1; }
+    .summary-item .num { font-size: 24px; font-weight: 700; }
+    .summary-item .label { font-size: 12px; color: #8e8e93; margin-top: 2px; }
     .num.green { color: #34c759; }
     .num.red { color: #ff3b30; }
     .num.gray { color: #aeaeb2; }
+
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
 <header>
   <h1>성산도서관 검색</h1>
-  <p>책 제목을 붙여넣고 대출 가능 여부를 확인하세요</p>
+  <p>책 제목을 입력하고 확인 후 도서관 검색</p>
 </header>
 
 <div class="container">
-  <div class="input-card">
-    <label>책 제목 입력</label>
-    <textarea id="titlesInput" placeholder="예시:&#10;RAIN&#10;The Weather Girls&#10;I am a Bunny&#10;&#10;한 줄에 제목 하나씩 입력하세요"></textarea>
-    <p class="hint">Claude에서 추출한 제목을 그대로 붙여넣으세요</p>
-    <button id="searchBtn" onclick="searchAll()">검색하기</button>
+
+  <!-- Step 1: 제목 입력 -->
+  <div id="step1">
+    <div class="card">
+      <label>책 제목 입력</label>
+      <textarea id="titlesInput" placeholder="예시:&#10;Rain!&#10;The Weather Girls&#10;I am a Bunny&#10;&#10;한 줄에 제목 하나씩 입력하세요"></textarea>
+      <p class="hint">Claude에서 추출한 제목을 그대로 붙여넣으세요</p>
+      <button class="btn btn-primary" onclick="verifyBooks()">제목 확인하기</button>
+    </div>
   </div>
 
+  <!-- 스피너 -->
   <div class="spinner" id="spinner">
     <div class="spinner-icon"></div>
-    검색 중...
+    <span id="spinnerText">책 정보 확인 중...</span>
   </div>
 
-  <div class="results" id="results"></div>
+  <!-- Step 2: 책 확인 -->
+  <div id="step2" class="hidden">
+    <div class="card">
+      <label>책 확인 <span id="verifyCount" style="font-weight:400;color:#aeaeb2;font-size:11px;"></span></label>
+      <p class="hint" style="margin-bottom:10px;">검색할 책을 체크하고, 맞지 않는 책은 체크를 해제하세요</p>
+      <div id="verifyList"></div>
+      <button class="btn btn-green" onclick="searchLibrary()">도서관 검색하기</button>
+      <button class="btn" style="background:#f2f2f7;color:#1c1c1e;margin-top:8px;" onclick="resetToStep1()">다시 입력하기</button>
+    </div>
+  </div>
+
+  <!-- Step 3: 도서관 결과 -->
+  <div id="step3" class="hidden">
+    <div id="libraryResults"></div>
+    <button class="btn" style="background:#f2f2f7;color:#1c1c1e;" onclick="resetToStep1()">처음으로</button>
+  </div>
+
 </div>
 
 <script>
-  async function searchAll() {
+  let verifiedBooks = []; // { query, foundTitle, foundAuthor, thumb, checked }
+
+  // ── Step 1 → Step 2: Google Books로 책 확인 ──
+  async function verifyBooks() {
     const raw = document.getElementById('titlesInput').value.trim();
     if (!raw) return alert('제목을 입력해주세요.');
-
     const titles = raw.split('\n').map(t => t.trim()).filter(t => t.length > 0);
-    if (titles.length === 0) return alert('제목을 입력해주세요.');
+    if (!titles.length) return alert('제목을 입력해주세요.');
 
-    const btn = document.getElementById('searchBtn');
-    btn.disabled = true;
-    document.getElementById('spinner').classList.add('show');
-    document.getElementById('results').innerHTML = '';
+    showSpinner('책 정보 확인 중...');
 
-    let totalAvailable = 0, totalUnavailable = 0, totalNotFound = 0;
-    const groups = [];
-
-    await Promise.all(titles.map(async (title) => {
+    const results = await Promise.all(titles.map(async (title) => {
       try {
-        const res = await fetch(`/api/search?title=${encodeURIComponent(title)}`);
+        const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=1&fields=items(volumeInfo(title,authors,imageLinks))`;
+        const res = await fetch(url);
         const data = await res.json();
-        groups.push({ title, data });
-      } catch (e) {
-        groups.push({ title, data: { error: '네트워크 오류' } });
+        if (data.items && data.items.length > 0) {
+          const info = data.items[0].volumeInfo;
+          return {
+            query: title,
+            foundTitle: info.title || title,
+            foundAuthor: info.authors ? info.authors.join(', ') : '',
+            thumb: info.imageLinks ? info.imageLinks.thumbnail || info.imageLinks.smallThumbnail || '' : '',
+            found: true,
+            checked: true,
+          };
+        }
+      } catch(e) {}
+      return { query: title, foundTitle: title, foundAuthor: '', thumb: '', found: false, checked: true };
+    }));
+
+    verifiedBooks = results;
+    renderVerifyStep();
+    hideSpinner();
+  }
+
+  function renderVerifyStep() {
+    const list = document.getElementById('verifyList');
+    list.innerHTML = verifiedBooks.map((b, i) => `
+      <div class="verify-card">
+        <div class="verify-check">
+          <input type="checkbox" id="chk${i}" ${b.checked ? 'checked' : ''} onchange="verifiedBooks[${i}].checked = this.checked; updateCount()">
+        </div>
+        ${b.thumb
+          ? `<img src="${escHtml(b.thumb)}" alt="cover" onerror="this.style.display='none'">`
+          : `<div style="width:54px;height:72px;background:#e5e5ea;border-radius:4px;flex-shrink:0;"></div>`}
+        <div class="verify-info">
+          <div class="verify-query">입력: ${escHtml(b.query)}</div>
+          <div class="verify-title">${escHtml(b.foundTitle)}</div>
+          ${b.foundAuthor ? `<div class="verify-author">${escHtml(b.foundAuthor)}</div>` : ''}
+          <span class="verify-badge ${b.found ? 'badge-found' : 'badge-notfound'}">${b.found ? '책 확인됨' : '미확인'}</span>
+        </div>
+      </div>
+    `).join('');
+
+    updateCount();
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.remove('hidden');
+    document.getElementById('step3').classList.add('hidden');
+  }
+
+  function updateCount() {
+    const total = verifiedBooks.length;
+    const checked = verifiedBooks.filter(b => b.checked).length;
+    document.getElementById('verifyCount').textContent = `${checked}/${total}개 선택됨`;
+  }
+
+  // ── Step 2 → Step 3: 도서관 검색 ──
+  async function searchLibrary() {
+    const toSearch = verifiedBooks.filter(b => b.checked);
+    if (!toSearch.length) return alert('검색할 책을 선택해주세요.');
+
+    showSpinner('도서관 검색 중...');
+    document.getElementById('step2').classList.add('hidden');
+
+    const groups = await Promise.all(toSearch.map(async (book) => {
+      try {
+        const res = await fetch(`/api/search?title=${encodeURIComponent(book.query)}`);
+        const data = await res.json();
+        return { book, data };
+      } catch(e) {
+        return { book, data: { error: '네트워크 오류' } };
       }
     }));
 
-    // 입력 순서 유지
-    const ordered = titles.map(t => groups.find(g => g.title === t)).filter(Boolean);
-
+    let totalAvailable = 0, totalUnavailable = 0, totalNotFound = 0;
     let html = '';
 
-    for (const { title, data } of ordered) {
+    for (const { book, data } of groups) {
       html += `<div class="search-group">`;
-      html += `<div class="search-query">검색: ${escHtml(title)}</div>`;
+      html += `<div class="section-title">${escHtml(book.query)}</div>`;
 
       if (data.error) {
-        html += `<div class="error-msg">${escHtml(data.error)}</div>`;
+        html += `<div class="no-result" style="border-left-color:#ff3b30;color:#c0392b;">${escHtml(data.error)}</div>`;
       } else if (!data.results || data.results.length === 0) {
         totalNotFound++;
-        html += `<div class="no-result">검색 결과가 없습니다.</div>`;
+        html += `<div class="no-result">성산도서관에 없는 책입니다.</div>`;
       } else {
-        data.results.forEach(book => {
-          const avail = book.available;
-          if (avail) totalAvailable++; else totalUnavailable++;
+        data.results.forEach(b => {
+          if (b.available) totalAvailable++; else totalUnavailable++;
           html += `
-            <div class="book-card ${avail ? '' : 'unavailable'}">
-              <div class="book-title">${escHtml(book.title)}</div>
-              ${book.author ? `<div class="book-meta"><span>저자</span> ${escHtml(book.author)}</div>` : ''}
-              ${book.callNo ? `<div class="book-meta"><span>청구기호</span> ${escHtml(book.callNo)}</div>` : ''}
-              ${book.shelfLoc ? `<div class="book-meta"><span>자료실</span> ${escHtml(book.shelfLoc)}</div>` : ''}
-              <span class="badge ${avail ? 'available' : 'unavailable'}">${escHtml(book.stateText) || (avail ? '대출가능' : '대출불가')}</span>
+            <div class="book-card ${b.available ? '' : 'unavailable'}">
+              <div class="book-title">${escHtml(b.title)}</div>
+              ${b.author ? `<div class="book-meta"><span>저자</span>${escHtml(b.author)}</div>` : ''}
+              ${b.callNo ? `<div class="book-meta"><span>청구기호</span>${escHtml(b.callNo)}</div>` : ''}
+              ${b.shelfLoc ? `<div class="book-meta"><span>자료실</span>${escHtml(b.shelfLoc)}</div>` : ''}
+              <span class="badge ${b.available ? 'available' : 'unavailable'}">${escHtml(b.stateText)}</span>
             </div>`;
         });
       }
-
       html += `</div>`;
     }
 
-    // 요약 카드
     const summaryHtml = `
       <div class="summary">
-        <div class="summary-item">
-          <div class="num green">${totalAvailable}</div>
-          <div class="label">대출가능</div>
-        </div>
-        <div class="summary-item">
-          <div class="num red">${totalUnavailable}</div>
-          <div class="label">대출불가</div>
-        </div>
-        <div class="summary-item">
-          <div class="num gray">${totalNotFound}</div>
-          <div class="label">미보유</div>
-        </div>
+        <div class="summary-item"><div class="num green">${totalAvailable}</div><div class="label">대출가능</div></div>
+        <div class="summary-item"><div class="num red">${totalUnavailable}</div><div class="label">대출불가</div></div>
+        <div class="summary-item"><div class="num gray">${totalNotFound}</div><div class="label">미보유</div></div>
       </div>`;
 
-    document.getElementById('results').innerHTML = summaryHtml + html;
-    document.getElementById('spinner').classList.remove('show');
-    btn.disabled = false;
+    document.getElementById('libraryResults').innerHTML = summaryHtml + html;
+    hideSpinner();
+    document.getElementById('step3').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    window.scrollTo({ top: document.getElementById('results').offsetTop - 20, behavior: 'smooth' });
+  function resetToStep1() {
+    document.getElementById('step1').classList.remove('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step3').classList.add('hidden');
+    document.getElementById('libraryResults').innerHTML = '';
+    verifiedBooks = [];
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showSpinner(text) {
+    document.getElementById('spinnerText').textContent = text;
+    document.getElementById('spinner').classList.add('show');
+  }
+  function hideSpinner() {
+    document.getElementById('spinner').classList.remove('show');
   }
 
   function escHtml(str) {
