@@ -718,32 +718,36 @@ async function searchLibrary() {
     if (data.error) {
       html += `<div class="book-item empty"><span class="empty-text">⚠ ${esc(data.error)}</span></div>`;
     } else if (data.libraries) {
+      let anyAvail = false;
       LIBS.forEach(libName => {
-        const arr = data.libraries[libName] || [];
+        const availArr = (data.libraries[libName] || [])
+          .filter(b => b.available)
+          .sort((a, b) => (a.callNo || '').localeCompare(b.callNo || ''));
+        if (availArr.length === 0) return;
+        anyAvail = true;
         const colorClass = LIB_COLOR[libName] || '';
         html += `<div class="lib-block">
           <div class="lib-header">
             <span class="lib-pill ${colorClass}">${LIB_EMOJI[libName]} ${esc(libName)}</span>
           </div>`;
-        if (arr.length === 0) {
-          html += `<div class="book-item empty"><span class="empty-text">보유 자료 없음</span></div>`;
-        } else {
-          arr.forEach(b => {
-            html += `
-              <div class="book-item ${b.available ? 'available' : 'unavailable'}">
-                <div class="book-item-info">
-                  <div class="bi-title">${esc(b.title)}</div>
-                  ${b.callNo ? `<div class="bi-meta"><span class="bi-meta-label">청구기호</span>${esc(b.callNo)}</div>` : ''}
-                  ${b.shelfLoc ? `<div class="bi-meta"><span class="bi-meta-label">자료실</span>${esc(b.shelfLoc)}</div>` : ''}
-                </div>
-                <div class="bi-status">
-                  <span class="status-badge ${b.available ? 'ok' : 'ng'}">${b.available ? '대출가능' : '대출불가'}</span>
-                </div>
-              </div>`;
-          });
-        }
+        availArr.forEach(b => {
+          html += `
+            <div class="book-item available">
+              <div class="book-item-info">
+                <div class="bi-title">${esc(b.title)}</div>
+                ${b.callNo ? `<div class="bi-meta"><span class="bi-meta-label">청구기호</span>${esc(b.callNo)}</div>` : ''}
+                ${b.shelfLoc ? `<div class="bi-meta"><span class="bi-meta-label">자료실</span>${esc(b.shelfLoc)}</div>` : ''}
+              </div>
+              <div class="bi-status">
+                <span class="status-badge ok">대출가능</span>
+              </div>
+            </div>`;
+        });
         html += `</div>`;
       });
+      if (!anyAvail) {
+        html += `<div class="book-item empty"><span class="empty-text">대출가능 항목 없음</span></div>`;
+      }
     }
     html += `</div>`;
   }
