@@ -8,14 +8,33 @@ const LOAN_CODE_MAP = {
   OUT_ON_LOAN:        { text: '대출불가(대출중)', available: false },
 };
 
-// 괄호 안 저자명 등 제거 → 핵심 제목만 추출
+// 저자명 등 부가정보 제거 → 핵심 제목만 추출
 function cleanTitle(title) {
   return title
-    .replace(/\s*\([^)]*\)\s*/g, ' ')  // (저자명) 제거
-    .replace(/\s*\[[^\]]*\]\s*/g, ' ')  // [부가정보] 제거
-    .trim()
-    .replace(/\s+/g, ' ')               // 중복 공백 정리
-    || title;
+    .replace(/\s*\([^)]*\)\s*/g, ' ')        // (저자명) 제거
+    .replace(/\s*\[[^\]]*\]\s*/g, ' ')        // [부가정보] 제거
+    .replace(/\s+-\s+[A-Z][^-]*$/, '')        // ' - Author Name' 끝 저자 제거
+    .replace(/\s+[Bb]y\s+.+$/, '')            // ' by Author' 제거
+    .replace(/\s*\/\s*[A-Z][A-Za-z\s]+$/, '') // ' / Author' 제거
+    .replace(/\s+/g, ' ').trim() || title;
+}
+
+// 한글 포함 여부 확인
+function hasKorean(str) {
+  return /[\uAC00-\uD7AF]/.test(str);
+}
+
+// 어린이 영어 도서 판별 (성산도서관용)
+function isEnglishChildrensBook(b) {
+  const title  = b.TITLE_INFO || '';
+  const callNo = b.CALL_NO   || '';
+  if (hasKorean(title)) return false;               // 한글 제목 제외
+  return /아영|영서/.test(callNo);                  // 어린이영어·영어서적 섹션만
+}
+
+// 영어 도서 판별 (cwlib용 — 섹션 정보 없으므로 제목만 확인)
+function isEnglishTitle(title) {
+  return !hasKorean(title);
 }
 
 // ── 성산도서관 ──────────────────────────────────────────
@@ -24,7 +43,7 @@ async function searchSungsan(title) {
     search_title: title,
     manage_code: 'MB',
     pageno: '1',
-    display: '5',
+    display: '10',           // 더 많이 가져와서 필터 후 충분히 남도록
     search_type: 'detail',
     lib_code: 'ss',
   });
@@ -41,7 +60,7 @@ async function searchSungsan(title) {
   if (data?.apiResponse?.status !== '200' || !data.result) return [];
 
   return data.result
-    .filter(b => b.TITLE_INFO)
+    .filter(b => b.TITLE_INFO && isEnglishChildrensBook(b))
     .map(b => {
       const loan = LOAN_CODE_MAP[b.LOAN_CODE] || { text: b.LOAN_CODE || '확인불가', available: false };
       return {
@@ -97,17 +116,20 @@ async function searchCwlib(title) {
   const loanRe = /id="loan_(\d+)"><!--([^-]*)-->/g;
   while ((m = loanRe.exec(html)) !== null) loans[m[1]] = m[2].trim();
 
-  // 도서관별 결과 정리
+  // 도서관별 결과 정리 (영어 제목만 포함)
   const results = {};
   Object.values(CWLIB_LIB_CODES).forEach(name => (results[name] = []));
 
   for (const [id, code] of Object.entries(bookLibMap)) {
     const libName = CWLIB_LIB_CODES[code];
+    const bookTitle = titles[id] || '';
+    if (!isEnglishTitle(bookTitle)) continue;       // 한글 제목 제외
+
     const loanStatus = loans[id] || '';
     const available = loanStatus === '대출가능';
 
     results[libName].push({
-      title: titles[id] || '',
+      title: bookTitle,
       callNo: callNos[id] || '',
       available,
       stateText: loanStatus || '확인불가',
