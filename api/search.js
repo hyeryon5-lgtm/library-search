@@ -11,7 +11,10 @@ const LOAN_CODE_MAP = {
 // 저자명 등 부가정보 제거 → 핵심 제목만 추출
 function cleanTitle(title) {
   return title
-    .replace(/\s*\([^)]*\)\s*/g, ' ')        // (저자명) 제거
+    .replace(/^\d+\.\s*/, '')                 // 1. 숫자 목록 제거
+    .replace(/\*\*/g, '')                     // **마크다운 볼드** 제거
+    .replace(/\s*←.*$/, '')                   // ← 우측 주석 제거
+    .replace(/\s*\([^)]*\)\s*/g, ' ')         // (저자명) 제거
     .replace(/\s*\[[^\]]*\]\s*/g, ' ')        // [부가정보] 제거
     .replace(/\s+-\s+[A-Z][^-]*$/, '')        // ' - Author Name' 끝 저자 제거
     .replace(/\s+[Bb]y\s+.+$/, '')            // ' by Author' 제거
