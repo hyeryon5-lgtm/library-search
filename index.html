@@ -356,49 +356,32 @@
       font-weight: 500;
     }
 
-    /* 책별 그룹 */
-    .book-group {
-      margin-bottom: 24px;
+    /* 도서관 그룹 */
+    .lib-group {
+      margin-bottom: 28px;
     }
 
-    .book-group-header {
+    .lib-group-header {
       display: flex;
-      align-items: baseline;
-      gap: 8px;
+      align-items: center;
+      gap: 10px;
       margin-bottom: 12px;
       padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
     }
 
-    .book-group-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.3px;
-    }
-
-    .book-group-searched {
-      font-size: 12px;
-      color: var(--accent2);
-      font-weight: 400;
-    }
-
-    /* 도서관 섹션 */
-    .lib-block { margin-bottom: 10px; }
-
-    .lib-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 7px;
-    }
-
     .lib-pill {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
-      padding: 4px 11px;
+      padding: 5px 13px;
       border-radius: 20px;
       letter-spacing: 0.2px;
+    }
+
+    .lib-count {
+      font-size: 12px;
+      color: var(--text3);
+      font-weight: 400;
     }
 
     .lib-sungsan   { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
@@ -411,12 +394,11 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 12px 14px;
+      padding: 11px 12px;
       margin-bottom: 6px;
       display: flex;
       align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
+      gap: 11px;
       transition: border-color 0.2s;
     }
 
@@ -426,6 +408,29 @@
       border-left: 3px solid var(--surface2);
       justify-content: center;
       padding: 10px 14px;
+    }
+
+    .bi-thumb {
+      width: 44px;
+      height: 60px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    .bi-thumb-empty {
+      width: 44px;
+      height: 60px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--surface), var(--surface2));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
     }
 
     .book-item-info { flex: 1; min-width: 0; }
@@ -459,6 +464,7 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 4px;
+      padding-top: 2px;
     }
 
     .status-badge {
@@ -706,51 +712,60 @@ async function searchLibrary() {
       </div>
     </div>`;
 
-  /* 결과 */
+  /* 도서관별로 재구성 */
+  const libData = {};
+  LIBS.forEach(lib => libData[lib] = []);
+
+  groups.forEach(({ book, data }) => {
+    if (!data.libraries) return;
+    LIBS.forEach(libName => {
+      (data.libraries[libName] || []).forEach(item => {
+        if (item.available) {
+          libData[libName].push({ ...item, bookThumb: book.thumb });
+        }
+      });
+    });
+  });
+
+  /* 각 도서관 내 청구기호 오름차순 정렬 */
+  LIBS.forEach(lib => {
+    libData[lib].sort((a, b) => (a.callNo || '').localeCompare(b.callNo || ''));
+  });
+
+  /* 결과 렌더링 */
   let html = '';
-  for (const { book, data } of groups) {
-    html += `<div class="book-group fadein">`;
-    html += `<div class="book-group-header">
-      <span class="book-group-title">${esc(book.query)}</span>
-      ${book.query !== book.cleaned ? `<span class="book-group-searched">→ ${esc(book.cleaned)}</span>` : ''}
+  LIBS.forEach(libName => {
+    const items = libData[libName];
+    const colorClass = LIB_COLOR[libName] || '';
+    html += `<div class="lib-group fadein">`;
+    html += `<div class="lib-group-header">
+      <span class="lib-pill ${colorClass}">${LIB_EMOJI[libName]} ${esc(libName)}</span>
+      <span class="lib-count">${items.length > 0 ? items.length + '권 대출가능' : '대출가능 없음'}</span>
     </div>`;
 
-    if (data.error) {
-      html += `<div class="book-item empty"><span class="empty-text">⚠ ${esc(data.error)}</span></div>`;
-    } else if (data.libraries) {
-      let anyAvail = false;
-      LIBS.forEach(libName => {
-        const availArr = (data.libraries[libName] || [])
-          .filter(b => b.available)
-          .sort((a, b) => (a.callNo || '').localeCompare(b.callNo || ''));
-        if (availArr.length === 0) return;
-        anyAvail = true;
-        const colorClass = LIB_COLOR[libName] || '';
-        html += `<div class="lib-block">
-          <div class="lib-header">
-            <span class="lib-pill ${colorClass}">${LIB_EMOJI[libName]} ${esc(libName)}</span>
+    if (items.length === 0) {
+      html += `<div class="book-item empty"><span class="empty-text">대출가능 항목 없음</span></div>`;
+    } else {
+      items.forEach(b => {
+        const thumbHtml = b.bookThumb
+          ? `<img class="bi-thumb" src="${esc(b.bookThumb)}" alt="cover" onerror="this.outerHTML='<div class=bi-thumb-empty>📖</div>'">`
+          : `<div class="bi-thumb-empty">📖</div>`;
+        html += `
+          <div class="book-item available">
+            ${thumbHtml}
+            <div class="book-item-info">
+              <div class="bi-title">${esc(b.title)}</div>
+              ${b.callNo ? `<div class="bi-meta"><span class="bi-meta-label">청구기호</span>${esc(b.callNo)}</div>` : ''}
+              ${b.shelfLoc ? `<div class="bi-meta"><span class="bi-meta-label">자료실</span>${esc(b.shelfLoc)}</div>` : ''}
+            </div>
+            <div class="bi-status">
+              <span class="status-badge ok">대출가능</span>
+            </div>
           </div>`;
-        availArr.forEach(b => {
-          html += `
-            <div class="book-item available">
-              <div class="book-item-info">
-                <div class="bi-title">${esc(b.title)}</div>
-                ${b.callNo ? `<div class="bi-meta"><span class="bi-meta-label">청구기호</span>${esc(b.callNo)}</div>` : ''}
-                ${b.shelfLoc ? `<div class="bi-meta"><span class="bi-meta-label">자료실</span>${esc(b.shelfLoc)}</div>` : ''}
-              </div>
-              <div class="bi-status">
-                <span class="status-badge ok">대출가능</span>
-              </div>
-            </div>`;
-        });
-        html += `</div>`;
       });
-      if (!anyAvail) {
-        html += `<div class="book-item empty"><span class="empty-text">대출가능 항목 없음</span></div>`;
-      }
     }
     html += `</div>`;
-  }
+  });
 
   document.getElementById('libraryResults').innerHTML = html;
   hideSpinner();
