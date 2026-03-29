@@ -221,25 +221,80 @@
       font-weight: 500;
     }
 
-    /* ── 책 확인 카드 ── */
-    .verify-list { display: flex; flex-direction: column; gap: 10px; }
+    /* ── 책 확인 (멀티소스) ── */
+    .verify-list { display: flex; flex-direction: column; gap: 14px; }
 
-    .verify-card {
+    .verify-group {
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 13px;
-      display: flex;
-      gap: 13px;
-      align-items: flex-start;
-      transition: border-color 0.2s;
+      border-radius: 16px;
+      overflow: hidden;
     }
 
-    .verify-card.checked { border-color: rgba(108,99,255,0.3); }
+    .vg-query {
+      font-size: 12px;
+      color: var(--text3);
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .vg-query-label {
+      font-size: 10px;
+      font-weight: 700;
+      background: var(--surface);
+      color: var(--text3);
+      padding: 2px 7px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .vg-query-text { color: var(--text2); font-weight: 500; }
+
+    .vg-cleaned {
+      font-size: 11px;
+      color: var(--accent2);
+    }
+
+    .vg-options { display: flex; flex-direction: column; }
+
+    .vg-option {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .vg-option:last-child { border-bottom: none; }
+    .vg-option:active { background: rgba(255,255,255,0.03); }
+
+    .vg-option.selected {
+      background: rgba(108,99,255,0.07);
+      border-left: 3px solid var(--accent);
+    }
+
+    .vg-option.notfound { opacity: 0.45; cursor: default; }
+
+    .vg-radio {
+      font-size: 18px;
+      flex-shrink: 0;
+      color: var(--accent);
+      width: 20px;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .vg-option.notfound .vg-radio { color: var(--text3); }
 
     .vc-thumb {
-      width: 52px; height: 72px;
-      border-radius: 7px;
+      width: 44px; height: 60px;
+      border-radius: 6px;
       object-fit: cover;
       flex-shrink: 0;
       background: var(--surface);
@@ -247,68 +302,44 @@
     }
 
     .vc-thumb-empty {
-      width: 52px; height: 72px;
-      border-radius: 7px;
+      width: 44px; height: 60px;
+      border-radius: 6px;
       flex-shrink: 0;
-      background: linear-gradient(135deg, var(--surface), var(--surface2));
+      background: var(--surface);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 18px;
+      color: var(--text3);
     }
 
     .vc-info { flex: 1; min-width: 0; }
 
-    .vc-query {
-      font-size: 11px;
-      color: var(--text3);
+    .vg-source-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      letter-spacing: 0.2px;
+    }
+
+    .src-google  { background: rgba(66,133,244,0.15);  color: #60a5fa; border: 1px solid rgba(66,133,244,0.25); }
+    .src-openlib { background: rgba(249,115,22,0.15);  color: #fb923c; border: 1px solid rgba(249,115,22,0.25); }
+    .src-naver   { background: rgba(34,197,94,0.15);   color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+
+    .vc-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--text);
       margin-bottom: 2px;
     }
 
-    .vc-cleaned {
-      font-size: 11px;
-      color: var(--accent2);
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .vc-title {
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.3;
-      color: var(--text);
-      margin-bottom: 3px;
-    }
-
     .vc-author { font-size: 12px; color: var(--text2); }
-
-    .vc-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 9px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-top: 6px;
-    }
-
-    .vc-badge.found { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
-    .vc-badge.notfound { background: var(--surface); color: var(--text3); border: 1px solid var(--border); }
-
-    .vc-check {
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .vc-check input[type=checkbox] {
-      width: 22px; height: 22px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
+    .vg-noresult { font-size: 12px; color: var(--text3); }
 
     /* ── 도서관 결과 ── */
     .results-header {
@@ -614,72 +645,99 @@ async function verifyBooks() {
 
   showSpinner('책 정보 확인 중...');
 
+  const SOURCE_KEYS  = ['google', 'openlib', 'naver'];
+  const SOURCE_NAMES = { google: 'Google Books', openlib: 'Open Library', naver: '네이버 책' };
+
   verifiedBooks = await Promise.all(titles.map(async t => {
     const cleaned = cleanTitle(t);
     try {
-      const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(cleaned)}&maxResults=1&fields=items(volumeInfo(title,authors,imageLinks))`;
-      const res = await fetch(url);
+      const res  = await fetch(`/api/books?title=${encodeURIComponent(cleaned)}`);
       const data = await res.json();
-      if (data.items?.length > 0) {
-        const info = data.items[0].volumeInfo;
-        return {
-          query: t, cleaned,
-          foundTitle: info.title || cleaned,
-          foundAuthor: (info.authors || []).join(', '),
-          thumb: (info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '').replace('http://', 'https://'),
-          found: true, checked: true
-        };
-      }
+      const results = SOURCE_KEYS.map(key => {
+        const r = data[key];
+        return r ? { source: SOURCE_NAMES[key], key, ...r, found: true }
+                 : { source: SOURCE_NAMES[key], key, found: false, foundTitle: '', foundAuthor: '', thumb: '' };
+      });
+      const firstFound = results.findIndex(r => r.found);
+      return { query: t, cleaned, results, selectedIdx: firstFound };
     } catch(e) {}
-    return { query: t, cleaned, foundTitle: cleaned, foundAuthor: '', thumb: '', found: false, checked: true };
+    return {
+      query: t, cleaned,
+      results: SOURCE_KEYS.map(key => ({ source: SOURCE_NAMES[key], key, found: false, foundTitle: '', foundAuthor: '', thumb: '' })),
+      selectedIdx: -1,
+    };
   }));
 
   renderStep2();
   hideSpinner();
 }
 
+const SRC_CLASS = { 'Google Books': 'src-google', 'Open Library': 'src-openlib', '네이버 책': 'src-naver' };
+
 function renderStep2() {
   document.getElementById('verifyList').innerHTML = verifiedBooks.map((b, i) => `
-    <div class="verify-card ${b.checked ? 'checked' : ''}" id="vc${i}">
-      <div class="vc-check">
-        <input type="checkbox" ${b.checked ? 'checked' : ''}
-          onchange="verifiedBooks[${i}].checked=this.checked; document.getElementById('vc${i}').className='verify-card '+(this.checked?'checked':''); updCount()">
+    <div class="verify-group" id="vg${i}">
+      <div class="vg-query">
+        <span class="vg-query-label">입력</span>
+        <span class="vg-query-text">${esc(b.query)}</span>
+        ${b.query !== b.cleaned ? `<span class="vg-cleaned">→ ${esc(b.cleaned)}</span>` : ''}
       </div>
-      ${b.thumb
-        ? `<img class="vc-thumb" src="${esc(b.thumb)}" alt="cover" onerror="this.outerHTML='<div class=vc-thumb-empty>📖</div>'">`
-        : `<div class="vc-thumb-empty">📖</div>`}
-      <div class="vc-info">
-        <div class="vc-query">입력: ${esc(b.query)}</div>
-        ${b.query !== b.cleaned ? `<div class="vc-cleaned">→ 검색어: ${esc(b.cleaned)}</div>` : ''}
-        <div class="vc-title">${esc(b.foundTitle)}</div>
-        ${b.foundAuthor ? `<div class="vc-author">${esc(b.foundAuthor)}</div>` : ''}
-        <span class="vc-badge ${b.found ? 'found' : 'notfound'}">${b.found ? '✓ 확인됨' : '미확인'}</span>
+      <div class="vg-options">
+        ${b.results.map((r, j) => `
+          <div class="vg-option ${b.selectedIdx === j ? 'selected' : ''} ${!r.found ? 'notfound' : ''}"
+               id="vgo${i}_${j}" onclick="selectSource(${i},${j})">
+            <div class="vg-radio">${b.selectedIdx === j ? '●' : '○'}</div>
+            ${r.found && r.thumb
+              ? `<img class="vc-thumb" src="${esc(r.thumb)}" alt="cover" onerror="this.outerHTML='<div class=vc-thumb-empty>📖</div>'">`
+              : `<div class="vc-thumb-empty">${r.found ? '📖' : '—'}</div>`}
+            <div class="vc-info">
+              <div class="vg-source-badge ${SRC_CLASS[r.source] || ''}">${esc(r.source)}</div>
+              ${r.found
+                ? `<div class="vc-title">${esc(r.foundTitle)}</div>
+                   ${r.foundAuthor ? `<div class="vc-author">${esc(r.foundAuthor)}</div>` : ''}`
+                : `<div class="vg-noresult">검색 결과 없음</div>`}
+            </div>
+          </div>`).join('')}
       </div>
     </div>`).join('');
   updCount();
   show('step2'); hide('step1'); hide('step3');
 }
 
+function selectSource(bi, si) {
+  const b = verifiedBooks[bi];
+  if (!b.results[si]?.found) return;
+  b.selectedIdx = b.selectedIdx === si ? -1 : si;
+  document.querySelectorAll(`#vg${bi} .vg-option`).forEach((el, j) => {
+    el.classList.toggle('selected', j === b.selectedIdx);
+    el.querySelector('.vg-radio').textContent = j === b.selectedIdx ? '●' : '○';
+  });
+  updCount();
+}
+
 function updCount() {
-  const c = verifiedBooks.filter(b => b.checked).length;
+  const c = verifiedBooks.filter(b => b.selectedIdx >= 0).length;
   document.getElementById('verifyCount').textContent = `${c} / ${verifiedBooks.length}권 선택`;
 }
 
 /* Step2 → Step3 */
 async function searchLibrary() {
-  const toSearch = verifiedBooks.filter(b => b.checked);
+  const toSearch = verifiedBooks.filter(b => b.selectedIdx >= 0);
   if (!toSearch.length) return alert('검색할 책을 선택해주세요.');
 
   showSpinner('4개 도서관 검색 중...');
   hide('step2');
 
   const groups = await Promise.all(toSearch.map(async book => {
+    const selected = book.results[book.selectedIdx];
+    const searchTitle = selected?.foundTitle || book.cleaned;
+    const thumb = selected?.thumb || '';
     try {
-      const res = await fetch(`/api/search?title=${encodeURIComponent(book.cleaned)}`);
+      const res = await fetch(`/api/search?title=${encodeURIComponent(searchTitle)}`);
       const data = await res.json();
-      return { book, data };
+      return { book, data, thumb };
     } catch(e) {
-      return { book, data: { error: '네트워크 오류' } };
+      return { book, data: { error: '네트워크 오류' }, thumb };
     }
   }));
 
@@ -716,12 +774,12 @@ async function searchLibrary() {
   const libData = {};
   LIBS.forEach(lib => libData[lib] = []);
 
-  groups.forEach(({ book, data }) => {
+  groups.forEach(({ data, thumb }) => {
     if (!data.libraries) return;
     LIBS.forEach(libName => {
       (data.libraries[libName] || []).forEach(item => {
         if (item.available) {
-          libData[libName].push({ ...item, bookThumb: book.thumb });
+          libData[libName].push({ ...item, bookThumb: thumb });
         }
       });
     });
