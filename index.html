@@ -626,7 +626,7 @@ async function verifyBooks() {
           query: t, cleaned,
           foundTitle: info.title || cleaned,
           foundAuthor: (info.authors || []).join(', '),
-          thumb: info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '',
+          thumb: (info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '').replace('http://', 'https://'),
           found: true, checked: true
         };
       }
